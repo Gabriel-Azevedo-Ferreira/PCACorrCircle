@@ -21,7 +21,7 @@ def create_correlation_table(A, B, names_cols_A, names_cols_B):
     return df_correlations
 
 
-def pca_correlation_graph(X, variables_names, dimensions=(1, 2), figure_axis_size=6):
+def pca_correlation_graph(X, variables_names, dimensions=(1, 2), figure_axis_size=6,X_pca=None):
     """
     Compute the PCA for X and plots the Correlation graph
 
@@ -29,12 +29,14 @@ def pca_correlation_graph(X, variables_names, dimensions=(1, 2), figure_axis_siz
     names_cols_X : name to be added to the final pandas table.
     variables_names : Name of the columns (the variables) of X
     dimensions: tuple with two elements. dimensions to be plot (x,y)
+    X_pca = optional. if not provided, compute PCA independently
     figure_axis_size = size of the final frame. The figure created is a square with length and width equal to figure_axis_size.
     """
     n_comp = max(dimensions)
 
     pca = PCA(n_components=n_comp)
-    X_pca = pca.fit_transform(X)
+    if X_pca is None:
+        X_pca = pca.fit_transform(X)
 
     correlations = create_correlation_table(
         X_pca, X, ['Dim ' + str(i + 1) for i in range(n_comp)], variables_names)
@@ -53,7 +55,7 @@ def pca_correlation_graph(X, variables_names, dimensions=(1, 2), figure_axis_siz
         x = row['Dim ' + str(dimensions[0])]
         y = row['Dim ' + str(dimensions[1])]
         plt.arrow(0.0, 0.0, x, y, color='k', length_includes_head=True,
-                  head_width=.01 * figure_axis_size, width=.001 * figure_axis_size)
+                  head_width=.05)
 
         plt.plot([0.0, x], [0.0, y], 'k-')
         texts.append(plt.text(x, y, name, fontsize=2 * figure_axis_size))
@@ -62,14 +64,11 @@ def pca_correlation_graph(X, variables_names, dimensions=(1, 2), figure_axis_siz
     plt.plot([0, 0], [-1.1, 1.1], 'k--')
 
     # Adjusting text
-    adjust_text(texts, expand_align=(1.5, 1.5),
-                expand_text=(1.5, 1.5),
-                expand_points=(1.5, 1.5),
-                expand_objects=(1.5, 1.5))
+    adjust_text(texts)
     # Setting limits and title
     plt.xlim((-1.1, 1.1))
     plt.ylim((-1.1, 1.1))
-    plt.title("Circle of Correlations", fontsize=figure_axis_size * 3)
+    plt.title("Correlation Circle", fontsize=figure_axis_size * 3)
 
     plt.xlabel("Dim " + str(dimensions[0]) + " (%s%%)" %
                str(explained_var_ratio[dimensions[0] - 1])[:4].lstrip("0."), fontsize=figure_axis_size * 2)
